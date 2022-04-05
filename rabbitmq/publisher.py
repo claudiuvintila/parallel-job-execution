@@ -30,7 +30,7 @@ class Publisher:
 
     def publish(self, msg, routing_key='standard_key'):
 
-        print("Sending message to create a queue")
+        print("Sending message to exchange: " + self.exchange)
         self.channel.basic_publish(
             self.exchange, routing_key, msg,
             pika.BasicProperties(content_type='text/plain',

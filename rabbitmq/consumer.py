@@ -73,8 +73,9 @@ class Consumer:
         thread_id = threading.get_ident()
         LOGGER.info('Thread id: %s Delivery tag: %s Message body: %s', thread_id,
                     delivery_tag, body)
-        # Sleeping to simulate 10 seconds of work
-        time.sleep(2)
+
+        self.process_task(body)
+
         cb = functools.partial(self.ack_message, ch, delivery_tag)
         conn.add_callback_threadsafe(cb)
 
@@ -84,6 +85,9 @@ class Consumer:
         t = threading.Thread(target=self.do_work, args=(conn, ch, delivery_tag, body))
         t.start()
         thrds.append(t)
+
+    def process_task(self, body):
+        print('Processed task')
 
 
 if __name__ == "__main__":
