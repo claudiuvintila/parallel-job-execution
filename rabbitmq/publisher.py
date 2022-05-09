@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0111,C0103,R0205
-
+import json
 import os
 import logging
 import pika
 from pika.exchange_type import ExchangeType
 from pika.spec import PERSISTENT_DELIVERY_MODE
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 
 
 class Publisher:
@@ -31,7 +31,7 @@ class Publisher:
     def publish(self, msg, routing_key=None):
         if routing_key is None:
             routing_key = self.exchange
-
+        print(self.exchange, routing_key, msg)
         print("Sending message to exchange: " + self.exchange)
         self.channel.basic_publish(
             self.exchange, routing_key, msg,
@@ -47,6 +47,10 @@ if __name__ == "__main__":
         username=os.environ['RABBITMQ_USERNAME'],
         password=os.environ['RABBITMQ_PASSWORD']
     )
-    publisher.publish('test msg')
+    body = json.dumps({
+        'db': 'dd',
+        'backup': 'vv'
+    })
+    publisher.publish(body)
 
 

@@ -17,11 +17,13 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 
 
 class Consumer:
-    def __init__(self, exchange, queue='standard', routing_key='standard_key', host='localhost', username='guest', password='guest'):
+    def __init__(self, exchange, queue=None, routing_key=None, host='localhost', username='guest', password='guest'):
         self.threads = []
         self.host = host
         self.exchange = exchange
-        self.queue = queue
+        self.queue = queue if queue is not None else self.exchange
+        self.routing_key = routing_key if routing_key is not None else self.exchange
+
         credentials = pika.PlainCredentials(username, password)
         # Note: sending a short heartbeat to prove that heartbeats are still
         # sent even though the worker simulates long-running work
@@ -36,9 +38,9 @@ class Consumer:
             passive=False,
             durable=True,
             auto_delete=False)
-        self.channel.queue_declare(queue=queue, auto_delete=True, durable=True)
+        self.channel.queue_declare(queue=self.queue, auto_delete=True, durable=True)
         self.channel.queue_bind(
-            queue=self.queue, exchange=self.exchange, routing_key=routing_key)
+            queue=self.queue, exchange=self.exchange, routing_key=self.routing_key)
         # Note: prefetch is set to 1 here as an example only and to keep the number of threads created
         # to a reasonable amount. In production you will want to test with different prefetch values
         # to find which one provides the best performance and usability for your solution
