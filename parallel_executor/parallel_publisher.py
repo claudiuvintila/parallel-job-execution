@@ -1,10 +1,10 @@
 import json
 import os
 
-from rabbitmq.publisher import Publisher
+import parallel_job_execution.rabbitmq.publisher
 
 
-class ParallelPublisher(Publisher):
+class ParallelPublisher(parallel_job_execution.rabbitmq.publisher.Publisher):
     def process_files(self):
         for file in ['file1.jpg', 'file2.jpg', 'file3.jpg']:
             self.publish(json.dumps({

@@ -21,6 +21,7 @@ class Consumer:
         self.threads = []
         self.host = host
         self.exchange = exchange
+        self.queue = queue
         credentials = pika.PlainCredentials(username, password)
         # Note: sending a short heartbeat to prove that heartbeats are still
         # sent even though the worker simulates long-running work
@@ -35,9 +36,9 @@ class Consumer:
             passive=False,
             durable=True,
             auto_delete=False)
-        self.channel.queue_declare(queue=queue, auto_delete=True)
+        self.channel.queue_declare(queue=queue, auto_delete=True, durable=True)
         self.channel.queue_bind(
-            queue=queue, exchange=self.exchange, routing_key=routing_key)
+            queue=self.queue, exchange=self.exchange, routing_key=routing_key)
         # Note: prefetch is set to 1 here as an example only and to keep the number of threads created
         # to a reasonable amount. In production you will want to test with different prefetch values
         # to find which one provides the best performance and usability for your solution
@@ -45,7 +46,7 @@ class Consumer:
 
     def start(self):
         on_message_callback = functools.partial(self.on_message, args=(self.connection, self.threads))
-        self.channel.basic_consume('standard', on_message_callback)
+        self.channel.basic_consume(self.queue, on_message_callback)
 
         try:
             self.channel.start_consuming()

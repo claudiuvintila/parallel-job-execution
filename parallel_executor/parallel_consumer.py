@@ -1,15 +1,15 @@
 import json
 import os
 
-from rabbitmq.consumer import Consumer
-from parallel_executor.business import Business
+import parallel_job_execution.rabbitmq.consumer
+import parallel_job_execution.parallel_executor.business
 
 
-class ParallelConsumer(Consumer):
+class ParallelConsumer(parallel_job_execution.rabbitmq.consumer.Consumer):
     def __init__(self, exchange, queue='standard', routing_key='standard_key', host='localhost', username='guest', password='guest'):
         super().__init__(exchange, queue, routing_key, host, username, password)
 
-        self.business = Business()
+        self.business = parallel_job_execution.parallel_executor.business.Business()
 
     def process_task(self, body):
         obj = json.loads(body)

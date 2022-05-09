@@ -5,7 +5,7 @@ import os
 import logging
 import pika
 from pika.exchange_type import ExchangeType
-from pika.spec import TRANSIENT_DELIVERY_MODE
+from pika.spec import PERSISTENT_DELIVERY_MODE
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,18 +28,21 @@ class Publisher:
     def __del__(self):
         self.connection.close()
 
-    def publish(self, msg, routing_key='standard_key'):
+    def publish(self, msg, routing_key=None):
+        if routing_key is None:
+            routing_key = self.exchange
 
         print("Sending message to exchange: " + self.exchange)
         self.channel.basic_publish(
             self.exchange, routing_key, msg,
             pika.BasicProperties(content_type='text/plain',
-                                 delivery_mode=TRANSIENT_DELIVERY_MODE))
+                                 delivery_mode=PERSISTENT_DELIVERY_MODE))
 
 
 if __name__ == "__main__":
     publisher = Publisher(
         os.environ['EXCHANGE'],
+        queue='standard',
         host=os.environ['RABBITMQ_HOST'],
         username=os.environ['RABBITMQ_USERNAME'],
         password=os.environ['RABBITMQ_PASSWORD']
