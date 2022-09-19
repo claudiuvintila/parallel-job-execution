@@ -13,7 +13,7 @@ LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+logging.basicConfig(level=logging.ERROR, format=LOG_FORMAT)
 
 
 class Consumer:
@@ -22,8 +22,10 @@ class Consumer:
                  queue=None,
                  routing_key=None,
                  host='localhost',
+                 port=5672,
                  username='guest',
                  password='guest',
+                 ssl_options=pika.ConnectionParameters._DEFAULT,
                  auto_delete_exchange=False,
                  auto_delete_queue=True
                  ):
@@ -36,8 +38,8 @@ class Consumer:
         credentials = pika.PlainCredentials(username, password)
         # Note: sending a short heartbeat to prove that heartbeats are still
         # sent even though the worker simulates long-running work
-        parameters = pika.ConnectionParameters(
-            host, credentials=credentials, heartbeat=5)
+        parameters = pika.ConnectionParameters(host, port=port, ssl_options=ssl_options, credentials=credentials,
+                                               heartbeat=5)
         self.connection = pika.BlockingConnection(parameters)
 
         self.channel = self.connection.channel()
@@ -46,7 +48,8 @@ class Consumer:
             exchange_type=ExchangeType.direct,
             passive=False,
             durable=True,
-            auto_delete=auto_delete_exchange)
+            auto_delete=auto_delete_exchange
+        )
         self.channel.queue_declare(queue=self.queue, auto_delete=auto_delete_queue, durable=True)
         self.channel.queue_bind(
             queue=self.queue, exchange=self.exchange, routing_key=self.routing_key)
